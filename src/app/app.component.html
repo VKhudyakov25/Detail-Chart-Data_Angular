@@ -1,20 +1,30 @@
-<div class="dx-fieldset-header">SearchBox</div>
-<div class="dx-field">
-  <div class="dx-field-label">Product</div>
-  <div class="dx-field-value">
-    <dx-select-box
-      #selectBox
-      [dataSource]="productsDataSource"
-      displayExpr="Name"
-      valueExpr="id"
-      [searchEnabled]="true"
-      [searchMode]="searchModeOption"
-      [searchExpr]="searchExprOption"
-      [searchTimeout]="searchTimeoutOption"
-      [acceptCustomValue]="true"
-      (onCustomItemCreating)="addCustomItem($event)"
-    >
-      ></dx-select-box
-    >
+<dx-chart
+  [dataSource]="dataSource"
+  title="Categories Chart"
+  (onPointClick)="eventHandling($event)"
+>
+  <dxi-series
+    argumentField="categoryName"
+    valueField="value"
+    type="bar"
+    name="Product Count"
+  ></dxi-series>
+  <dxo-tooltip
+    [enabled]="true"
+    [customizeTooltip]="customizeTooltip"
+  ></dxo-tooltip>
+</dx-chart>
+<dx-popup
+  #popup
+  [hideOnOutsideClick]="true"
+  contentTemplate="popup-content"
+  [showTitle]="true"
+>
+  <div *dxTemplate="let data of 'popup-content'">
+    <dx-data-grid [dataSource]="products" [showBorders]="true">
+      <dxi-column dataField="ProductName"></dxi-column>
+      <dxi-column dataField="QuantityPerUnit"></dxi-column>
+      <dxi-column dataField="UnitsInStock"></dxi-column>
+    </dx-data-grid>
   </div>
-</div>
+</dx-popup>

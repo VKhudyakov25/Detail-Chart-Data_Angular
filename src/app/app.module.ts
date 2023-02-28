@@ -5,14 +5,14 @@ import { AppComponent } from './app.component';
 import { AppService } from './app.service';
 
 import {
-  DxButtonModule,
-  DxTextBoxModule,
-  DxSelectBoxModule,
+  DxDataGridModule,
+  DxChartModule,
+  DxPopupModule,
 } from 'devextreme-angular';
 
 @NgModule({
   declarations: [AppComponent],
-  imports: [BrowserModule, DxButtonModule, DxTextBoxModule, DxSelectBoxModule],
+  imports: [BrowserModule, DxDataGridModule, DxChartModule, DxPopupModule],
   providers: [AppService],
   bootstrap: [AppComponent],
 })

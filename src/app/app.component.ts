@@ -1,62 +1,55 @@
-import { Component } from '@angular/core';
+import { Component, ViewChild } from '@angular/core';
 
-import { Product, AppService } from './app.service';
+import { AppService } from './app.service';
 import DataSource from 'devextreme/data/data_source';
-import CustomStore from 'devextreme/data/custom_store';
+import ODataStore from 'devextreme/data/odata/store';
+import * as _ from 'underscore';
+import { DxPopupComponent } from 'devextreme-angular';
 
 @Component({
   selector: 'app-root',
   templateUrl: './app.component.html',
   styleUrls: ['./app.component.css'],
-  providers: [AppService],
 })
 export class AppComponent {
-  products: Product[];
-  productsDataSource: DataSource;
-  myStore: CustomStore;
-  searchModeOption = 'contains';
-  searchExprOption: any = 'Name';
-  searchTimeoutOption = 200;
-  minSearchLengthOption = 0;
-  showDataBeforeSearchOption = false;
+  dataSource: DataSource;
+  categoryList: any = [];
+  products: any;
+  currentArgument: any;
+  @ViewChild(DxPopupComponent) popup: DxPopupComponent;
 
-  constructor(service: AppService) {
-    this.products = service.getProducts();
-    this.myStore = new CustomStore({
-      key: 'id',
-      loadMode: 'raw',
-      load: () => {
-        return service.getProducts();
+  constructor() {
+    this.dataSource = new DataSource({
+      store: new ODataStore({
+        url: 'https://services.odata.org/V3/Northwind/Northwind.svc/Products_by_Categories',
+      }),
+      paginate: false,
+      postProcess: (results) => {
+        let arr = [];
+        let grp = _.groupBy(results, 'CategoryName');
+        for (let obj in grp) {
+          arr.push({
+            categoryName: obj,
+            productList: grp[obj],
+            value: grp[obj].length,
+          });
+        }
+        this.categoryList = arr;
+        return arr;
       },
-      insert: (val) => {
-        return service.insertProduct(val);
-      },
-    });
-    this.productsDataSource = new DataSource({
-      store: this.myStore,
     });
   }
-
-  addCustomItem = (data: any) => {
-    if (!data.text) {
-      data.customItem = null;
-      return;
-    }
-    let productIds: any;
-    this.myStore.load().then((e: any) => {
-      productIds = e.map((item: Product) => item.id);
-    });
-    let incrementedId = Math.max.apply(null, productIds) + 1;
-    let newItem = {
-      Name: data.text,
-      id: incrementedId,
-    };
-    this.myStore
-      .insert(newItem)
-      .then(() => this.productsDataSource.load())
-      .then(() => newItem)
-      .catch((error) => {
-        throw error;
-      });
-  };
+  customizeTooltip(arg: any) {
+    text: arg.valueText;
+  }
+  eventHandling(e: any) {
+    let argument = e.target.argument;
+    let category = this.categoryList.filter(
+      (item: any) => item.categoryName === argument
+    );
+    this.products = category[0].productList;
+    this.currentArgument = argument;
+    this.popup.title = `Product List in ${this.currentArgument}`;
+    this.popup.instance.show();
+  }
 }
